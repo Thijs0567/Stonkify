@@ -4,6 +4,7 @@ import tkinter as tk
 import os
 import utils
 
+
 def populate_treeview(tree, playlist_data):
     # Clear existing items in the Treeview
     tree.delete(*tree.get_children())
@@ -18,14 +19,25 @@ def populate_treeview(tree, playlist_data):
         release_date = entry['release_date']
         duration = entry['duration_ms']
         popularity = entry['popularity']
+        danceability = entry['danceability']
+        energy = entry['energy']
+        key = entry['key']
+        loudness = entry['loudness']
+        mode = entry['mode']
+        speechiness = entry['speechiness']
+        acousticness = entry['acousticness']
+        instrumentalness = entry['instrumentalness']
+        liveness = entry['liveness']
+        valence = entry['valence']
+        tempo = entry['tempo']
 
         # Insert the information into the Treeview
-        tree.insert('', 'end', values=(song_name, artists, album, release_date, duration, popularity, song_id))
+        tree.insert('', 'end', values=(song_name, artists, album, release_date, duration, popularity, song_id, danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo))
 
 def create_treeview(overview_frame):
     global tree
     tree = ttk.Treeview(overview_frame)
-    tree['columns'] = ('Name', 'Artists', 'Album', 'Release Date', 'Duration', 'Popularity', 'Spotify ID')
+    tree['columns'] = ('Name', 'Artists', 'Album', 'Release Date', 'Duration', 'Popularity', 'Spotify ID', 'danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo')
     # DIRTY FIX: Hide the first column (tree column)
     tree.column("#0", width=0)
 
@@ -39,15 +51,22 @@ def create_treeview(overview_frame):
     vsb.grid(row=2, column=2, sticky="ns")
     tree.grid(row=2, column=0, columnspan=3, pady=(50, 0), padx=10, sticky="nsew")
 
+     # Add horizontal scrollbar
+    hsb = ttk.Scrollbar(overview_frame, orient="horizontal", command=tree.xview)
+    tree.configure(xscrollcommand=hsb.set)
+    hsb.grid(row=3, column=0, columnspan=3, padx=10, sticky="ew")
+
     # After creating the treeview widget:
     setup_treeview_sorting(tree)
 
     #Populate tree with previous data if available:
     # Check if the file exists and then populate the treeview
-    jsonfile = './resources/playlist_data.json'
-    if os.path.exists(jsonfile):
-        playlist_data = utils.read_playlist_data_from_json(jsonfile)
+    jsonfile = 'playlist_data.json'
+    if os.path.exists(os.path.join("resources/playlists", jsonfile)):
+        playlist_data = utils.load_playlist_data(jsonfile)
         populate_treeview(tree, playlist_data)
+    else:
+        print("Failed to populate")
     return tree
 
 def setup_treeview_sorting(tree):
@@ -79,7 +98,7 @@ def sort_treeview_column(tree, col_id):
     items = [(tree.set(item, col_id), item) for item in tree.get_children('')]
 
     # Sort the items based on the column values
-    if col_id in ('Duration', 'Popularity'):  # Check if the column contains numeric data
+    if col_id in ('Duration', 'Popularity', 'loudness', 'key', 'tempo'):  # Check if the column contains numeric data
         items.sort(key=lambda x: float(x[0]), reverse=reverse)  # Convert values to float for numeric sorting
     else:
         items.sort(reverse=reverse)

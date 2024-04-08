@@ -58,6 +58,11 @@ def fetch_track_info(track):
         'popularity': track['track']['popularity'],
         'id': track['track']['id']  # Include track ID
     }
+    # Call the fetch_track_audio_features function to get audio features
+    audio_features = fetch_track_audio_features(track['track']['id'])
+    if audio_features:
+        # Add audio features to track_info
+        track_info.update(audio_features)
     return track_info
 
 def save_playlist_data(playlist_id, filename):
@@ -66,25 +71,25 @@ def save_playlist_data(playlist_id, filename):
     for track in tracks:
         playlist_data.append(fetch_track_info(track))
     # Prepend the filename with the path to the resources directory
-    filepath = os.path.join("resources", filename)
+    filepath = os.path.join("resources/playlists", filename)
     with open(filepath, 'w') as f:
         json.dump(playlist_data, f)
 
 def load_playlist_data(filename):
     # Prepend the filename with the path to the resources directory
-    filepath = os.path.join("resources", filename)
+    filepath = os.path.join("resources/playlists", filename)
+
+    # Check if the file exists
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"File '{filename}' not found in resources directory.")
+
     with open(filepath, 'r') as f:
         playlist_data = json.load(f)
     return playlist_data
 
-def read_playlist_data_from_json(file_path):
-    with open(file_path, 'r') as file:
-        playlist_data = json.load(file)
-    return playlist_data
-
-def fetch_track_audio_features(track_id):
+def fetch_track_audio_features(track):
     # Make an API request to fetch audio features for the track
-    audio_features = sp.audio_features(track_id)
+    audio_features = sp.audio_features(track)
     
     if audio_features:
         # Extract relevant audio features
@@ -100,7 +105,6 @@ def fetch_track_audio_features(track_id):
             'liveness': audio_features[0]['liveness'],
             'valence': audio_features[0]['valence'],
             'tempo': audio_features[0]['tempo'],
-            'duration_ms': audio_features[0]['duration_ms']
         }
         return track_audio_features
     else:

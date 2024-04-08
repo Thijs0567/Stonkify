@@ -31,7 +31,7 @@ class MyApplication(ctk.CTkFrame):
         # Add content to the Overview page
 
         # Create a label with centered text
-        label_text = "Paste Spotify playlist link here:"
+        label_text = "Spotify playlist link here:"
         overview_label = ctk.CTkLabel(overview_frame, text=label_text, font=('Helvetica', 16))
         overview_label.grid(row=0, column=0, pady=(10, 5), sticky="n")
 
@@ -46,15 +46,15 @@ class MyApplication(ctk.CTkFrame):
         # Create a Treeview widget
         tree = gui_utils.create_treeview(overview_frame)
 
-        # Create a button
-        def button_clicked():
+        # Define submit button function:
+        def submit_playlist_link():
             # Get the input from the entry widget
             link = input_box.get()
 
-             # Extract the playlist ID from the link
+            # Extract the playlist ID from the link
             playlist_id = utils.extract_playlist_id(link)
 
-             # Load the playlist data to a JSON:
+            # Load the playlist data to a JSON:
             playlist_data = utils.load_playlist(playlist_id)
 
             # Populate the Treeview widget with JSON data
@@ -65,10 +65,9 @@ class MyApplication(ctk.CTkFrame):
             else:
                 tk.messagebox.showerror("Error", "Invalid Spotify playlist link")
 
-        button = ctk.CTkButton(overview_frame, text="Submit", command=button_clicked)
+        # Create submit button
+        button = ctk.CTkButton(overview_frame, text="Submit", command=submit_playlist_link)
         button.grid(row=1, column=1, pady=(0, 5), padx=(0, 10), sticky="w")
-
-        
 
         # Add Overview page to the notebook
         self.notebook.add(overview_frame, text="Overview")
@@ -81,8 +80,6 @@ class MyApplication(ctk.CTkFrame):
         # Add Details page to the notebook
         self.notebook.add(details_frame, text="Details")
 
-        
-
     def create_settings_page(self):
         settings_frame = ctk.CTkFrame(self.notebook)
         # Add content to the Settings page
@@ -90,3 +87,4 @@ class MyApplication(ctk.CTkFrame):
         settings_label.pack(pady=10)
         # Add Settings page to the notebook
         self.notebook.add(settings_frame, text="Settings")
+
