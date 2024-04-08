@@ -82,44 +82,26 @@ def read_playlist_data_from_json(file_path):
         playlist_data = json.load(file)
     return playlist_data
 
-def populate_treeview(tree, playlist_data):
-    # Clear existing items in the Treeview
-    tree.delete(*tree.get_children())
-
-    # Loop through each entry in the playlist data
-    for entry in playlist_data:
-        # Extract information from the entry
-        song_id = entry['id']
-        song_name = entry['name']
-        artists = ", ".join(entry['artists'])
-        album = entry['album']
-        release_date = entry['release_date']
-        duration = entry['duration_ms']
-        popularity = entry['popularity']
-
-        # Insert the information into the Treeview
-        tree.insert('', 'end', values=(song_name, artists, album, release_date, duration, popularity, song_id))
-
-    def fetch_track_audio_features(track_id):
-        # Make an API request to fetch audio features for the track
-        audio_features = sp.audio_features(track_id)
-        
-        if audio_features:
-            # Extract relevant audio features
-            track_audio_features = {
-                'danceability': audio_features[0]['danceability'],
-                'energy': audio_features[0]['energy'],
-                'key': audio_features[0]['key'],
-                'loudness': audio_features[0]['loudness'],
-                'mode': audio_features[0]['mode'],
-                'speechiness': audio_features[0]['speechiness'],
-                'acousticness': audio_features[0]['acousticness'],
-                'instrumentalness': audio_features[0]['instrumentalness'],
-                'liveness': audio_features[0]['liveness'],
-                'valence': audio_features[0]['valence'],
-                'tempo': audio_features[0]['tempo'],
-                'duration_ms': audio_features[0]['duration_ms']
-            }
-            return track_audio_features
-        else:
-            return None
+def fetch_track_audio_features(track_id):
+    # Make an API request to fetch audio features for the track
+    audio_features = sp.audio_features(track_id)
+    
+    if audio_features:
+        # Extract relevant audio features
+        track_audio_features = {
+            'danceability': audio_features[0]['danceability'],
+            'energy': audio_features[0]['energy'],
+            'key': audio_features[0]['key'],
+            'loudness': audio_features[0]['loudness'],
+            'mode': audio_features[0]['mode'],
+            'speechiness': audio_features[0]['speechiness'],
+            'acousticness': audio_features[0]['acousticness'],
+            'instrumentalness': audio_features[0]['instrumentalness'],
+            'liveness': audio_features[0]['liveness'],
+            'valence': audio_features[0]['valence'],
+            'tempo': audio_features[0]['tempo'],
+            'duration_ms': audio_features[0]['duration_ms']
+        }
+        return track_audio_features
+    else:
+        return None
