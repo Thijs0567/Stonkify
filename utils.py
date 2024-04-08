@@ -47,26 +47,6 @@ def load_playlist(playlist_id):
         
     return playlist_data
 
-# def update_playlists_json(new_playlist_info):
-#     playlists_file = "resources/playlists.json"
-#     if not os.path.exists(playlists_file):
-#         with open(playlists_file, 'w') as f:
-#             json.dump([], f)
-
-#     # Load existing playlist info
-#     with open(playlists_file, 'r') as f:
-#         existing_playlists = json.load(f)
-
-#     # Check if playlist ID already exists
-#     playlist_ids = [playlist['id'] for playlist in existing_playlists]
-#     if new_playlist_info['id'] not in playlist_ids:
-#         existing_playlists.append(new_playlist_info)
-#         # Update playlists.json with new playlist info
-#         with open(playlists_file, 'w') as f:
-#             json.dump(existing_playlists, f, indent=4)  # Use indentation for better readability
-
-#     return
-
 def update_playlists_json(new_playlist_info):
     playlists_file = "resources/playlists.json"
     if not os.path.exists(playlists_file):
@@ -89,7 +69,6 @@ def update_playlists_json(new_playlist_info):
             json.dump(existing_playlists, f, indent=4)  # Use indentation for better readability
 
     return
-
 
 def get_playlist_tracks(playlist_id):
     tracks = []
@@ -117,16 +96,6 @@ def fetch_track_info(track):
         # Add audio features to track_info
         track_info.update(audio_features)
     return track_info
-
-# def save_playlist_data(playlist_id, filename):
-#     tracks = get_playlist_tracks(playlist_id)
-#     playlist_data = []
-#     for track in tracks:
-#         playlist_data.append(fetch_track_info(track))
-#     # Prepend the filename with the path to the resources directory
-#     filepath = os.path.join("resources/playlists", filename)
-#     with open(filepath, 'w') as f:
-#         json.dump(playlist_data, f)
 
 def save_playlist_data(playlist_id, filename):
     # Fetch the playlist details including its name
