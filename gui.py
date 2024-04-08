@@ -48,6 +48,9 @@ class MyApplication(ctk.CTkFrame):
 
         # Define submit button function:
         def submit_playlist_link():
+            #Reset error 429 handling:
+            global error_429_occurred
+            error_429_occurred = False
             # Get the input from the entry widget
             link = input_box.get()
 

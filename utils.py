@@ -5,6 +5,9 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from dotenv import load_dotenv
 
+#Setting global parameters:
+error_429_occurred = False
+
 def extract_playlist_id(link):
     # Regular expression to extract the playlist ID
     regex = r"/playlist/(\w+)\?"
@@ -28,7 +31,13 @@ def load_playlist(playlist_id):
     global sp
     sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
-    filename = 'playlist_data.json'
+    filename = f'{playlist_id}.json'
+
+    # Fetch the playlist data
+    playlist_name = sp.playlist(playlist_id)['name']
+
+    # Update playlists.json with playlist ID and name
+    update_playlists_json({'id': playlist_id, 'name': playlist_name})
 
     # Fetch and save playlist data
     save_playlist_data(playlist_id, filename)
@@ -37,6 +46,49 @@ def load_playlist(playlist_id):
     playlist_data = load_playlist_data(filename)
         
     return playlist_data
+
+# def update_playlists_json(new_playlist_info):
+#     playlists_file = "resources/playlists.json"
+#     if not os.path.exists(playlists_file):
+#         with open(playlists_file, 'w') as f:
+#             json.dump([], f)
+
+#     # Load existing playlist info
+#     with open(playlists_file, 'r') as f:
+#         existing_playlists = json.load(f)
+
+#     # Check if playlist ID already exists
+#     playlist_ids = [playlist['id'] for playlist in existing_playlists]
+#     if new_playlist_info['id'] not in playlist_ids:
+#         existing_playlists.append(new_playlist_info)
+#         # Update playlists.json with new playlist info
+#         with open(playlists_file, 'w') as f:
+#             json.dump(existing_playlists, f, indent=4)  # Use indentation for better readability
+
+#     return
+
+def update_playlists_json(new_playlist_info):
+    playlists_file = "resources/playlists.json"
+    if not os.path.exists(playlists_file):
+        with open(playlists_file, 'w') as f:
+            json.dump([], f)
+
+    # Load existing playlist info
+    with open(playlists_file, 'r') as f:
+        try:
+            existing_playlists = json.load(f)
+        except json.decoder.JSONDecodeError:
+            existing_playlists = []
+
+    # Check if playlist ID already exists
+    playlist_ids = [playlist['id'] for playlist in existing_playlists]
+    if new_playlist_info['id'] not in playlist_ids:
+        existing_playlists.append(new_playlist_info)
+        # Update playlists.json with new playlist info
+        with open(playlists_file, 'w') as f:
+            json.dump(existing_playlists, f, indent=4)  # Use indentation for better readability
+
+    return
 
 
 def get_playlist_tracks(playlist_id):
@@ -58,6 +110,7 @@ def fetch_track_info(track):
         'popularity': track['track']['popularity'],
         'id': track['track']['id']  # Include track ID
     }
+
     # Call the fetch_track_audio_features function to get audio features
     audio_features = fetch_track_audio_features(track['track']['id'])
     if audio_features:
@@ -65,7 +118,24 @@ def fetch_track_info(track):
         track_info.update(audio_features)
     return track_info
 
+# def save_playlist_data(playlist_id, filename):
+#     tracks = get_playlist_tracks(playlist_id)
+#     playlist_data = []
+#     for track in tracks:
+#         playlist_data.append(fetch_track_info(track))
+#     # Prepend the filename with the path to the resources directory
+#     filepath = os.path.join("resources/playlists", filename)
+#     with open(filepath, 'w') as f:
+#         json.dump(playlist_data, f)
+
 def save_playlist_data(playlist_id, filename):
+    # Fetch the playlist details including its name
+    playlist_info = sp.playlist(playlist_id)
+
+    # Get the playlist name
+    playlist_name = playlist_info['name']
+
+    # Fetch and save playlist data
     tracks = get_playlist_tracks(playlist_id)
     playlist_data = []
     for track in tracks:
@@ -73,7 +143,7 @@ def save_playlist_data(playlist_id, filename):
     # Prepend the filename with the path to the resources directory
     filepath = os.path.join("resources/playlists", filename)
     with open(filepath, 'w') as f:
-        json.dump(playlist_data, f)
+        json.dump(playlist_data, f, indent = 4)
 
 def load_playlist_data(filename):
     # Prepend the filename with the path to the resources directory
@@ -88,24 +158,35 @@ def load_playlist_data(filename):
     return playlist_data
 
 def fetch_track_audio_features(track):
-    # Make an API request to fetch audio features for the track
-    audio_features = sp.audio_features(track)
+    # Don't run if 429 occured
+    global error_429_occurred
+    if error_429_occurred:
+        return None
     
-    if audio_features:
-        # Extract relevant audio features
-        track_audio_features = {
-            'danceability': audio_features[0]['danceability'],
-            'energy': audio_features[0]['energy'],
-            'key': audio_features[0]['key'],
-            'loudness': audio_features[0]['loudness'],
-            'mode': audio_features[0]['mode'],
-            'speechiness': audio_features[0]['speechiness'],
-            'acousticness': audio_features[0]['acousticness'],
-            'instrumentalness': audio_features[0]['instrumentalness'],
-            'liveness': audio_features[0]['liveness'],
-            'valence': audio_features[0]['valence'],
-            'tempo': audio_features[0]['tempo'],
-        }
-        return track_audio_features
-    else:
+    try:
+        # Make an API request to fetch audio features for the track
+        audio_features = sp.audio_features(track)
+        
+        if audio_features:
+            # Extract relevant audio features
+            track_audio_features = {
+                'danceability': audio_features[0]['danceability'],
+                'energy': audio_features[0]['energy'],
+                'key': audio_features[0]['key'],
+                'loudness': audio_features[0]['loudness'],
+                'mode': audio_features[0]['mode'],
+                'speechiness': audio_features[0]['speechiness'],
+                'acousticness': audio_features[0]['acousticness'],
+                'instrumentalness': audio_features[0]['instrumentalness'],
+                'liveness': audio_features[0]['liveness'],
+                'valence': audio_features[0]['valence'],
+                'tempo': audio_features[0]['tempo'],
+            }
+            return track_audio_features
+        else:
+            return None
+    except spotipy.SpotifyException as e:
+        # Handle 429 error
+        error_429_occurred = True
+        print(f"Error fetching audio features for track {track}: {e}")
         return None

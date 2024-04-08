@@ -19,20 +19,20 @@ def populate_treeview(tree, playlist_data):
         release_date = entry['release_date']
         duration = entry['duration_ms']
         popularity = entry['popularity']
-        danceability = entry['danceability']
-        energy = entry['energy']
-        key = entry['key']
-        loudness = entry['loudness']
-        mode = entry['mode']
-        speechiness = entry['speechiness']
-        acousticness = entry['acousticness']
-        instrumentalness = entry['instrumentalness']
-        liveness = entry['liveness']
-        valence = entry['valence']
-        tempo = entry['tempo']
 
         # Insert the information into the Treeview
-        tree.insert('', 'end', values=(song_name, artists, album, release_date, duration, popularity, song_id, danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo))
+        values = (song_name, artists, album, release_date, duration, popularity, song_id)
+        # Append audio features if they are present
+        if all(key in entry for key in ['danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo']):
+            # Extract audio features
+            audio_features = {
+                key: entry[key] for key in ['danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo']
+            }
+
+            # Insert the information into the Treeview
+            values += tuple(audio_features.values())
+
+        tree.insert('', 'end', values=values)
 
 def create_treeview(overview_frame):
     global tree

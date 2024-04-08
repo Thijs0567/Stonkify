@@ -3,3 +3,7 @@
 
 # Ignore archive folder and its contents
 archive/
+
+# Ignore playlists
+resources/playlists.json
+resources/playlists
